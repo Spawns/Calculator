@@ -24,6 +24,8 @@ class ViewController: UIViewController {
         }
     }
     
+
+    
     @IBAction func operate(sender: UIButton) {
         let operation = sender.currentTitle!
         if userIsInTheMiddleOfTypingANumber{
@@ -35,6 +37,9 @@ class ViewController: UIViewController {
             case "+": performOperation {$0+$1}
             case "−": performOperation {$1-$0}
             case "√": performOperation1 {sqrt($0)}
+            case "sin˙": performOperation1 {sin($0*M_PI/180.0)}
+            case "cos˙": performOperation1 {cos($0*M_PI/180.0)}
+            case "π": performOperation2 ()
             default: break
         }
     }
@@ -53,12 +58,16 @@ class ViewController: UIViewController {
         }
     }
     
+    func performOperation2 (){
+        displayValue = M_PI
+        enter()
+    }
+    
     var operandStack = Array<Double>()
     
     @IBAction func enter() {
         userIsInTheMiddleOfTypingANumber = false
         operandStack.append(displayValue)
-        print("operandStack = \(operandStack)")
     }
 
     var displayValue: Double{
