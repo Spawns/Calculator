@@ -8,19 +8,23 @@
 
 import Foundation
 
-class CalculatorBrain {
-    
-    private enum Op: CustomStringConvertible {
+class CalculatorBrain
+{
+    private enum Op: CustomStringConvertible
+    {
         case Operand(Double)
-        case UnitaryOperation(String, Double -> Double)
+        case NullaryOperation(String, () -> Double)
+        case UnaryOperation(String, Double -> Double)
         case BinaryOperation(String, (Double, Double) -> Double)
         
-        var description: String{
-            get{
-                switch self{
+        var description: String {
+            get {
+                switch self {
                 case .Operand(let operand):
                     return "\(operand)"
-                case .UnitaryOperation(let symbol, _):
+                case .NullaryOperation(let symbol, _):
+                    return symbol
+                case .UnaryOperation(let symbol, _):
                     return symbol
                 case .BinaryOperation(let symbol, _):
                     return symbol
@@ -33,38 +37,39 @@ class CalculatorBrain {
     
     private var knownOps = [String:Op]()
     
-    init(){
-        func learnOp (op: Op){
+    init() {
+        func learnOp (op: Op) {
             knownOps[op.description] = op
         }
         learnOp(Op.BinaryOperation("×", *))
-        learnOp(Op.BinaryOperation("÷") {$1/$0})
+        learnOp(Op.BinaryOperation("÷", { $1 / $0 }))
         learnOp(Op.BinaryOperation("+", +))
-        learnOp(Op.BinaryOperation("−") {$1-$0})
-        learnOp(Op.UnitaryOperation("√", sqrt))
-        learnOp(Op.UnitaryOperation("sin˙", sin))
-        learnOp(Op.UnitaryOperation("cos˙", cos))
-        learnOp(Op.Operand(M_PI))
-
+        learnOp(Op.BinaryOperation("−", { $1 - $0 }))
+        learnOp(Op.UnaryOperation("√", sqrt))
+        learnOp(Op.UnaryOperation("sin", sin))
+        learnOp(Op.UnaryOperation("cos", cos))
+        learnOp(Op.NullaryOperation("π", { M_PI }))
     }
     
-    private func evaluate(ops: [Op]) -> (result: Double?, remainingOps: [Op]){
-        if !ops.isEmpty{
+    private func evaluate(ops: [Op]) -> (result: Double?, remainingOps: [Op]) {
+        if !ops.isEmpty {
             var remainingOps = ops
             let op = remainingOps.removeLast()
-            switch op{
+            switch op {
             case .Operand(let operand):
                 return (operand, remainingOps)
-            case .UnitaryOperation(_, let operation):
+            case .NullaryOperation(_, let operation):
+                return (operation(), remainingOps)
+            case .UnaryOperation(_, let operation):
                 let operandEvaluation = evaluate(remainingOps)
-                if let operand = operandEvaluation.result{
+                if let operand = operandEvaluation.result {
                     return (operation(operand), operandEvaluation.remainingOps)
                 }
             case .BinaryOperation(_, let operation):
                 let op1Evaluation = evaluate(remainingOps)
-                if let operand1 = op1Evaluation.result{
+                if let operand1 = op1Evaluation.result {
                     let op2Evaluation = evaluate(op1Evaluation.remainingOps)
-                    if let operand2 = op2Evaluation.result{
+                    if let operand2 = op2Evaluation.result {
                         return (operation(operand1, operand2), op2Evaluation.remainingOps)
                     }
                 }
@@ -73,8 +78,8 @@ class CalculatorBrain {
         return (nil, ops)
     }
     
-    func evaluate() -> Double?{
-        let (result, reminder) = evaluate(opStack)
+    func evaluate() -> Double? {
+        let (result, remainder) = evaluate(opStack)
         return result
     }
     
@@ -84,10 +89,9 @@ class CalculatorBrain {
     }
     
     func performOperation(symbol: String) -> Double? {
-        if let operation = knownOps[symbol]{
-            opStack.append(operation)
+        if let operation = knownOps[symbol] {
+            opStack.append(operation);
         }
         return evaluate()
     }
-    
 }

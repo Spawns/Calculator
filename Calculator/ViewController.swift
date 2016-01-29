@@ -8,34 +8,37 @@
 
 import UIKit
 
-class ViewController: UIViewController {
-    
+class ViewController: UIViewController
+{
     @IBOutlet weak var display: UILabel!
     
-    var userIsInTheMiddleOfTypingANumber: Bool = false
+    var userIsInTheMiddleOfTypingANumber = false
     
     var brain = CalculatorBrain()
     
     @IBAction func appendDigit(sender: UIButton) {
         let digit = sender.currentTitle!
-        if userIsInTheMiddleOfTypingANumber{
+        if userIsInTheMiddleOfTypingANumber {
+            if (digit == ".") && (display.text!.rangeOfString(".") != nil) { return }
             display.text = display.text! + digit
-        }
-        else{
-            display.text = digit
-            userIsInTheMiddleOfTypingANumber=true
+        } else {
+            if digit == "." {
+                display.text = "0."
+            } else {
+                display.text = digit
+            }
+            userIsInTheMiddleOfTypingANumber = true
         }
     }
     
     @IBAction func operate(sender: UIButton) {
-        if userIsInTheMiddleOfTypingANumber{
+        if userIsInTheMiddleOfTypingANumber {
             enter()
         }
-        if let operation = sender.currentTitle{
-            if let result = brain.performOperation(operation){
+        if let operation = sender.currentTitle {
+            if let result = brain.performOperation(operation) {
                 displayValue = result
-            }
-            else{
+            } else {
                 displayValue = 0
             }
         }
@@ -45,20 +48,19 @@ class ViewController: UIViewController {
         userIsInTheMiddleOfTypingANumber = false
         if let result = brain.pushOperand(displayValue) {
             displayValue = result
-        }
-        else {
+        } else {
+            // error?
             displayValue = 0
         }
     }
-
-    var displayValue: Double{
-        get{
+    
+    var displayValue: Double {
+        get {
             return NSNumberFormatter().numberFromString(display.text!)!.doubleValue
         }
-        set{
-            display.text  = "\(newValue)"
+        set {
+            display.text = "\(newValue)"
+            userIsInTheMiddleOfTypingANumber = false
         }
     }
-    
 }
-
