@@ -48,6 +48,7 @@ class CalculatorBrain
         learnOp(Op.UnaryOperation("√", sqrt))
         learnOp(Op.UnaryOperation("sin", sin))
         learnOp(Op.UnaryOperation("cos", cos))
+        learnOp(Op.UnaryOperation("±", { -$0 }))
         learnOp(Op.NullaryOperation("π", { M_PI }))
     }
     
@@ -78,8 +79,14 @@ class CalculatorBrain
         return (nil, ops)
     }
     
+    func showStack() -> String? {
+        return " ".join(opStack.map{ "\($0)" })
+    }
+    
     func evaluate() -> Double? {
         let (result, remainder) = evaluate(opStack)
+        //let (result, _) = evaluate(opStack)
+        //println("\(opStack) = \(result) with \(remainder) left over")
         return result
     }
     
