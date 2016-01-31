@@ -11,6 +11,7 @@ import UIKit
 class ViewController: UIViewController
 {
     @IBOutlet weak var display: UILabel!
+    @IBOutlet weak var history: UILabel!
     
     var userIsInTheMiddleOfTypingANumber = false
     
@@ -20,7 +21,12 @@ class ViewController: UIViewController
         let digit = sender.currentTitle!
         if userIsInTheMiddleOfTypingANumber {
             if (digit == ".") && (display.text!.rangeOfString(".") != nil) { return }
-            display.text = display.text! + digit
+            if (digit == "0") && (display.text == "0") { return }
+            if (digit != ".") && (display.text == "0") {
+                display.text = digit
+            } else {
+                display.text = display.text! + digit
+            }
         } else {
             if digit == "." {
                 display.text = "0."
@@ -49,9 +55,13 @@ class ViewController: UIViewController
         if let result = brain.pushOperand(displayValue) {
             displayValue = result
         } else {
-            // error?
             displayValue = 0
         }
+    }
+    
+    @IBAction func clear() {
+        brain = CalculatorBrain()
+        displayValue = 0
     }
     
     var displayValue: Double {
@@ -61,6 +71,7 @@ class ViewController: UIViewController
         set {
             display.text = "\(newValue)"
             userIsInTheMiddleOfTypingANumber = false
+            history.text = brain.showStack()
         }
     }
 }
